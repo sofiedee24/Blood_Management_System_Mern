@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   HomeIcon,
   UserGroupIcon,
@@ -15,148 +15,7 @@ import {
 export default function DonationsDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [active, setActive] = useState("Blood Donations");
-  const [donations, setDonations] = useState([
-    {
-      id: 1,
-      date: "2025-08-15",
-      donor: "Juan Dela Cruz",
-      bloodGroup: "A+",
-      volume: 500,
-    },
-    {
-      id: 2,
-      date: "2025-08-18",
-      donor: "Maria Santos",
-      bloodGroup: "O-",
-      volume: 450,
-    },
-    {
-      id: 3,
-      date: "2025-08-20",
-      donor: "Carlos Reyes",
-      bloodGroup: "B+",
-      volume: 600,
-    },
-    {
-      id: 4,
-      date: "2025-08-21",
-      donor: "Angela Cruz",
-      bloodGroup: "AB-",
-      volume: 400,
-    },
-    {
-      id: 5,
-      date: "2025-08-22",
-      donor: "Jose Ramirez",
-      bloodGroup: "O+",
-      volume: 550,
-    },
-    {
-      id: 6,
-      date: "2025-08-23",
-      donor: "Sofia Mendoza",
-      bloodGroup: "A-",
-      volume: 480,
-    },
-    {
-      id: 7,
-      date: "2025-08-24",
-      donor: "Miguel Torres",
-      bloodGroup: "B-",
-      volume: 500,
-    },
-    {
-      id: 8,
-      date: "2025-08-25",
-      donor: "Isabella Cruz",
-      bloodGroup: "AB+",
-      volume: 470,
-    },
-    {
-      id: 9,
-      date: "2025-08-26",
-      donor: "Daniel Garcia",
-      bloodGroup: "O-",
-      volume: 520,
-    },
-    {
-      id: 10,
-      date: "2025-08-27",
-      donor: "Camille Santos",
-      bloodGroup: "A+",
-      volume: 490,
-    },
-    {
-      id: 11,
-      date: "2025-08-28",
-      donor: "Luis Fernandez",
-      bloodGroup: "B+",
-      volume: 510,
-    },
-    {
-      id: 12,
-      date: "2025-08-29",
-      donor: "Andrea Ramos",
-      bloodGroup: "O+",
-      volume: 600,
-    },
-    {
-      id: 13,
-      date: "2025-08-30",
-      donor: "Patrick Dizon",
-      bloodGroup: "A-",
-      volume: 450,
-    },
-    {
-      id: 14,
-      date: "2025-08-31",
-      donor: "Katrina Lopez",
-      bloodGroup: "AB-",
-      volume: 400,
-    },
-    {
-      id: 15,
-      date: "2025-09-01",
-      donor: "Marco Perez",
-      bloodGroup: "O+",
-      volume: 560,
-    },
-    {
-      id: 16,
-      date: "2025-09-02",
-      donor: "Nicole Gutierrez",
-      bloodGroup: "B+",
-      volume: 500,
-    },
-    {
-      id: 17,
-      date: "2025-09-03",
-      donor: "Rafael Cruz",
-      bloodGroup: "O-",
-      volume: 480,
-    },
-    {
-      id: 18,
-      date: "2025-09-04",
-      donor: "Hannah Villanueva",
-      bloodGroup: "A+",
-      volume: 530,
-    },
-    {
-      id: 19,
-      date: "2025-09-05",
-      donor: "Joshua Santos",
-      bloodGroup: "B-",
-      volume: 490,
-    },
-    {
-      id: 20,
-      date: "2025-09-06",
-      donor: "Monica Delgado",
-      bloodGroup: "AB+",
-      volume: 550,
-    },
-  ]);
+  const [donations, setDonations] = useState([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isNewEntryModalOpen, setIsNewEntryModalOpen] = useState(false);
   const [selectedDonation, setSelectedDonation] = useState(null);
@@ -168,6 +27,9 @@ export default function DonationsDashboard() {
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
   const itemsPerPage = 8;
 
   const menuItems = [
@@ -180,6 +42,188 @@ export default function DonationsDashboard() {
     { name: "Settings", icon: Cog6ToothIcon },
     { name: "Logout", icon: ArrowRightOnRectangleIcon },
   ];
+
+  // Function to submit data to the API
+  const submitToBloodAPI = async (donationData) => {
+    setIsLoading(true);
+    setError(null);
+  
+    try {
+      const response = await fetch('http://localhost:5000/api', { // full backend URL
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(donationData),
+        //credentials: 'include', // if using cookies/auth, otherwise optional
+      });
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+  
+      const result = await response.json();
+      setSuccess('Donation successfully added!');
+      setTimeout(() => setSuccess(null), 3000);
+  
+      return result;
+    } catch (err) {
+      setError(err.message || 'Failed to submit donation');
+      console.error('Error submitting to API:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+
+  // Load initial donations (you might want to fetch these from an API too)
+  useEffect(() => {
+    // This would typically be an API call to fetch existing donations
+    // For now, we'll use the sample data you provided
+    const sampleData = [
+      {
+        id: 1,
+        date: "2025-08-15",
+        donor: "Juan Dela Cruz",
+        bloodGroup: "A+",
+        volume: 500,
+      },
+      {
+        id: 2,
+        date: "2025-08-18",
+        donor: "Maria Santos",
+        bloodGroup: "O-",
+        volume: 450,
+      },
+      {
+        id: 3,
+        date: "2025-08-20",
+        donor: "Carlos Reyes",
+        bloodGroup: "B+",
+        volume: 600,
+      },
+      {
+        id: 4,
+        date: "2025-08-21",
+        donor: "Angela Cruz",
+        bloodGroup: "AB-",
+        volume: 400,
+      },
+      {
+        id: 5,
+        date: "2025-08-22",
+        donor: "Jose Ramirez",
+        bloodGroup: "O+",
+        volume: 550,
+      },
+      {
+        id: 6,
+        date: "2025-08-23",
+        donor: "Sofia Mendoza",
+        bloodGroup: "A-",
+        volume: 480,
+      },
+      {
+        id: 7,
+        date: "2025-08-24",
+        donor: "Miguel Torres",
+        bloodGroup: "B-",
+        volume: 500,
+      },
+      {
+        id: 8,
+        date: "2025-08-25",
+        donor: "Isabella Cruz",
+        bloodGroup: "AB+",
+        volume: 470,
+      },
+      {
+        id: 9,
+        date: "2025-08-26",
+        donor: "Daniel Garcia",
+        bloodGroup: "O-",
+        volume: 520,
+      },
+      {
+        id: 10,
+        date: "2025-08-27",
+        donor: "Camille Santos",
+        bloodGroup: "A+",
+        volume: 490,
+      },
+      {
+        id: 11,
+        date: "2025-08-28",
+        donor: "Luis Fernandez",
+        bloodGroup: "B+",
+        volume: 510,
+      },
+      {
+        id: 12,
+        date: "2025-08-29",
+        donor: "Andrea Ramos",
+        bloodGroup: "O+",
+        volume: 600,
+      },
+      {
+        id: 13,
+        date: "2025-08-30",
+        donor: "Patrick Dizon",
+        bloodGroup: "A-",
+        volume: 450,
+      },
+      {
+        id: 14,
+        date: "2025-08-31",
+        donor: "Katrina Lopez",
+        bloodGroup: "AB-",
+        volume: 400,
+      },
+      {
+        id: 15,
+        date: "2025-09-01",
+        donor: "Marco Perez",
+        bloodGroup: "O+",
+        volume: 560,
+      },
+      {
+        id: 16,
+        date: "2025-09-02",
+        donor: "Nicole Gutierrez",
+        bloodGroup: "B+",
+        volume: 500,
+      },
+      {
+        id: 17,
+        date: "2025-09-03",
+        donor: "Rafael Cruz",
+        bloodGroup: "O-",
+        volume: 480,
+      },
+      {
+        id: 18,
+        date: "2025-09-04",
+        donor: "Hannah Villanueva",
+        bloodGroup: "A+",
+        volume: 530,
+      },
+      {
+        id: 19,
+        date: "2025-09-05",
+        donor: "Joshua Santos",
+        bloodGroup: "B-",
+        volume: 490,
+      },
+      {
+        id: 20,
+        date: "2025-09-06",
+        donor: "Monica Delgado",
+        bloodGroup: "AB+",
+        volume: 550,
+      },
+    ];
+    
+    setDonations(sampleData);
+  }, []);
 
   // Filter donations based on search term
   const filteredDonations = donations.filter(
@@ -214,21 +258,29 @@ export default function DonationsDashboard() {
     });
   };
 
-  const handleSubmitNewEntry = (e) => {
+  const handleSubmitNewEntry = async (e) => {
     e.preventDefault();
-    // Add the new donation to the list
-    const newId =
-      donations.length > 0 ? Math.max(...donations.map((d) => d.id)) + 1 : 1;
-    setDonations([...donations, { id: newId, ...newDonation }]);
-
-    // Reset form and close modal
-    setNewDonation({
-      date: "",
-      donor: "",
-      bloodGroup: "",
-      volume: "",
-    });
-    setIsNewEntryModalOpen(false);
+    
+    try {
+      // Submit the new donation to the API
+      const result = await submitToBloodAPI(newDonation);
+      
+      // If successful, add the new donation to the local state
+      // The API should return the created donation with an ID
+      setDonations([...donations, { id: donations.length + 1, ...result }]);
+      
+      // Reset form and close modal
+      setNewDonation({
+        date: "",
+        donor: "",
+        bloodGroup: "",
+        volume: "",
+      });
+      setIsNewEntryModalOpen(false);
+    } catch (err) {
+      // Error is already handled in submitToBloodAPI
+      // You could add additional error handling here if needed
+    }
   };
 
   const closeEditModal = () => {
@@ -244,6 +296,7 @@ export default function DonationsDashboard() {
       bloodGroup: "",
       volume: "",
     });
+    setError(null);
   };
 
   const handlePageChange = (page) => {
@@ -257,6 +310,40 @@ export default function DonationsDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+      {/* Notification area */}
+      <div className="fixed top-20 right-4 z-50 space-y-2">
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg">
+            <div className="flex justify-between items-center">
+              <span className="block sm:inline">Error: {error}</span>
+              <button onClick={() => setError(null)}>
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        )}
+        {success && (
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-lg">
+            <div className="flex justify-between items-center">
+              <span className="block sm:inline">{success}</span>
+              <button onClick={() => setSuccess(null)}>
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Loading overlay */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg flex items-center">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-3"></div>
+            <p className="text-lg font-medium">Submitting donation...</p>
+          </div>
+        </div>
+      )}
+
       {/* Top Navbar */}
       <nav className="fixed top-0 z-50 w-full bg-[#800000] text-white shadow-md">
         <div className="px-4 py-3 flex items-center justify-between">
