@@ -1,16 +1,16 @@
 const mongoose = require("mongoose");
 
 const donorSchema = new mongoose.Schema({
-  date: {
+  Date: {
     type: Date,
     required: [true, "Date is required"],
   },
-  donor: {
+  Donor: {
     type: String,
     required: [true, "Donor name is required"],
     trim: true,
   },
-  bloodGroup: {
+  BloodGroup: {
     type: String,
     required: [true, "Blood group is required"],
     trim: true,
@@ -20,11 +20,16 @@ const donorSchema = new mongoose.Schema({
       message: "{VALUE} is not a valid blood group",
     },
   },
-  volume: {
+  Volume: {
     type: Number,
     required: [true, "Volume is required"],
     min: [1, "Volume must be at least 1ml"],
   },
 });
 
-module.exports = mongoose.model("DonorModel", donorSchema, "Donors");
+//module.exports = mongoose.model("DonorModel", donorSchema);
+//baka tanggalin ko yung "Donors"
+//module.exports = Products;
+
+const DonorModel = mongoose.model("DonorModel", donorSchema)
+module.exports = DonorModel;
